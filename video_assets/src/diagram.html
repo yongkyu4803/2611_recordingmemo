@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>녹음 처리 구조도</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #3ecf8e; --primary-deep: #24b47e;
+    --canvas: #ffffff; --canvas-soft: #fafafa;
+    --hairline: #dfdfdf; --hairline-strong: #c7c7c7;
+    --ink: #171717; --ink-mute: #707070; --ink-faint: #b2b2b2;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 100%; height: 100%; background: var(--canvas); }
+  body {
+    font-family: "Inter", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+    color: var(--ink); word-break: keep-all;
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 0 96px; gap: 72px;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
+  header h1 { font-weight: 500; font-size: 56px; line-height: 1.1; letter-spacing: -0.03em; }
+  header p { margin-top: 16px; font-size: 26px; color: var(--ink-mute); }
+
+  .flow { display: flex; align-items: center; margin-top: 36px; }
+  .mac {
+    display: flex; align-items: center; position: relative;
+    background: var(--canvas-soft); border: 1px dashed var(--hairline-strong);
+    border-radius: 16px; padding: 20px;
+  }
+  .mac-label {
+    position: absolute; top: -34px; left: 4px;
+    font-size: 20px; font-weight: 500; color: var(--ink-mute);
+  }
+  .node {
+    width: 190px; height: 210px; background: var(--canvas); border: 1px solid var(--hairline);
+    border-radius: 12px; padding: 22px 20px; display: flex; flex-direction: column; gap: 10px;
+    transition: none;
+  }
+  .node .num { font-size: 16px; color: var(--ink-mute); }
+  .node .name { font-size: 27px; font-weight: 500; letter-spacing: -0.015em; line-height: 1.2; }
+  .node .desc { font-size: 19px; color: var(--ink-mute); line-height: 1.4; }
+
+  .link { display: flex; flex-direction: column; align-items: center; justify-content: center;
+          width: 52px; flex: none; gap: 6px; }
+  .link.tagged { width: 104px; }
+  .link .arrow { font-size: 30px; color: var(--ink); line-height: 1; }
+  .link .tag { font-size: 16px; font-weight: 500; white-space: nowrap; color: var(--ink-mute); }
+  .link .tag.key { background: var(--primary); color: var(--ink); padding: 3px 8px; border-radius: 4px; }
+
+  .caption { display: flex; align-items: center; gap: 14px; font-size: 26px; }
+  .caption .dot { width: 14px; height: 14px; border-radius: 9999px; background: var(--primary); flex: none; }
+
+  /* 단계 강조 (애니메이션 프레임용) */
+  body.stepping .node, body.stepping .link { opacity: 0.25; }
+  body.stepping .node.on, body.stepping .link.on { opacity: 1; }
+  body.stepping .node.current { border: 2px solid var(--primary-deep); box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+  body.stepping .caption { visibility: hidden; }
+
+  /* 세로 9:16 */
+  body.v { padding: 0 72px; gap: 56px; }
+  body.v header h1 { font-size: 64px; }
+  body.v header p { font-size: 30px; }
+  body.v .flow, body.v .mac { flex-direction: column; }
+  body.v .mac { padding: 20px; margin-top: 44px; }
+  body.v .mac-label { font-size: 22px; }
+  body.v .node { width: 100%; height: auto; flex-direction: row; align-items: baseline; gap: 18px; padding: 24px 28px; }
+  body.v .node .num { font-size: 20px; width: 28px; flex: none; }
+  body.v .node .name { font-size: 36px; flex: none; }
+  body.v .node .desc { font-size: 24px; }
+  body.v .link, body.v .link.tagged { width: auto; height: 56px; flex-direction: row; gap: 12px; }
+  body.v .link .arrow { font-size: 32px; }
+  body.v .link .arrow::before { content: "↓"; }
+  body.v .link .arrow span { display: none; }
+  body.v .link .tag { font-size: 20px; }
+  body.v .caption { font-size: 30px; align-items: flex-start; }
+  body.v .caption .dot { margin-top: 12px; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>녹음이 Notion 페이지가 되기까지</h1>
+    <p>15분마다 자동으로 7단계를 거칩니다</p>
+  </header>
+
+  <div class="flow">
+    <div class="node" data-step="1"><span class="num mono">01</span><span class="name">Google Drive</span><span class="desc">휴대폰 녹음이 올라오는 폴더</span></div>
+    <div class="link tagged" data-step="2"><span class="tag">오디오</span><span class="arrow"><span>→</span></span></div>
+    <div class="mac">
+      <span class="mac-label">내 Mac</span>
+      <div class="node" data-step="2"><span class="num mono">02</span><span class="name">다운로드</span><span class="desc">Mac으로 내려받기</span></div>
+      <div class="link" data-step="3"><span class="arrow"><span>→</span></span></div>
+      <div class="node" data-step="3"><span class="num mono">03</span><span class="name">무음 제거</span><span class="desc">앞뒤 빈 구간 자르기</span></div>
+      <div class="link" data-step="4"><span class="arrow"><span>→</span></span></div>
+      <div class="node" data-step="4"><span class="num mono">04</span><span class="name">Whisper 전사</span><span class="desc">Mac에서 직접 받아 적기</span></div>
+    </div>
+    <div class="link tagged" data-step="5"><span class="tag key">텍스트만</span><span class="arrow"><span>→</span></span></div>
+    <div class="node" data-step="5"><span class="num mono">05</span><span class="name">Claude 정리</span><span class="desc">요약·포인트·할&nbsp;일</span></div>
+    <div class="link" data-step="6"><span class="arrow"><span>→</span></span></div>
+    <div class="node" data-step="6"><span class="num mono">06</span><span class="name">Notion 페이지</span><span class="desc">정리 결과 저장</span></div>
+    <div class="link" data-step="7"><span class="arrow"><span>→</span></span></div>
+    <div class="node" data-step="7"><span class="num mono">07</span><span class="name">처리완료</span><span class="desc">Drive 원본 옮기기</span></div>
+  </div>
+
+  <div class="caption"><span class="dot"></span><span>오디오는 Mac 밖으로 나가지 않고, Claude에는 글만 보냅니다</span></div>
+
+<script>
+  // ?ratio=v → 세로(9:16), ?step=0..7 → 그 단계까지만 켜기 (생략하면 완성 화면)
+  const q = new URLSearchParams(location.search);
+  if (q.get("ratio") === "v") document.body.classList.add("v");
+  if (q.has("step")) {
+    const step = Number(q.get("step"));
+    document.body.classList.add("stepping");
+    document.querySelectorAll("[data-step]").forEach(el => {
+      const s = Number(el.dataset.step);
+      if (s <= step) el.classList.add("on");
+      if (s === step && el.classList.contains("node")) el.classList.add("current");
+    });
+  }
+</script>
+</body>
+</html>

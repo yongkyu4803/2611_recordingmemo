@@ -1,0 +1,16 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+config.toml
+data/
+*.json.key
+service-account*.json
+google-token*.json
+google-oauth-client*.json
+.pytest_cache/
+.hyperframes/
+.DS_Store
+video_assets/out/

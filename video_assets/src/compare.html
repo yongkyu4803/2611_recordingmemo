@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>비교 카드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #3ecf8e; --primary-deep: #24b47e; --primary-soft: #ecfbf4;
+    --canvas: #ffffff; --canvas-soft: #fafafa;
+    --hairline: #dfdfdf; --hairline-strong: #c7c7c7;
+    --ink: #171717; --ink-mute: #707070;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 100%; height: 100%; background: var(--canvas); }
+  body {
+    font-family: "Inter", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+    color: var(--ink); word-break: keep-all;
+    display: flex; flex-direction: column; justify-content: center; padding: 0 140px;
+  }
+  .card { display: none; flex-direction: column; gap: 44px; }
+  .card.show { display: flex; }
+  .eyebrow { font-size: 30px; color: var(--ink-mute); font-weight: 500; }
+  h1 { font-size: 64px; font-weight: 500; letter-spacing: -0.03em; line-height: 1.15; margin-top: 12px; }
+
+  .table { display: grid; grid-template-columns: 200px 1fr 1fr; border-top: 1px solid var(--hairline); }
+  .table > div { padding: 26px 28px; border-bottom: 1px solid var(--hairline); font-size: 32px; line-height: 1.4; }
+  .table .head { font-size: 28px; font-weight: 500; color: var(--ink-mute); padding-top: 22px; padding-bottom: 22px; }
+  .table .head.pick { color: var(--ink); }
+  .table .row-label { font-size: 28px; font-weight: 500; color: var(--ink-mute); padding-left: 0; }
+  .table .other { color: var(--ink-mute); }
+  .table .pick { background: var(--primary-soft); }
+  .table .pick strong { font-weight: 500; }
+  .badge { display: inline-block; margin-left: 12px; background: var(--primary); color: var(--ink);
+           font-size: 20px; font-weight: 500; padding: 4px 10px; border-radius: 6px; vertical-align: 4px; }
+  .note { font-size: 24px; color: var(--ink-mute); }
+
+  /* 세로 9:16: 항목마다 라벨을 위에 두고 두 칸을 나란히 */
+  body.v { padding: 0 64px; }
+  body.v .card { gap: 48px; }
+  body.v .eyebrow { font-size: 36px; }
+  body.v h1 { font-size: 72px; }
+  body.v .table { grid-template-columns: 1fr 1fr; }
+  body.v .table .corner { display: none; }
+  body.v .table .row-label { grid-column: 1 / -1; padding: 28px 0 10px; border-bottom: 0; font-size: 30px; }
+  body.v .table > div { font-size: 34px; padding: 24px 24px; }
+  body.v .table .head { font-size: 28px; }
+  body.v .badge { display: block; width: max-content; margin: 10px 0 0; }
+  body.v .note { font-size: 28px; line-height: 1.45; }
+</style>
+</head>
+<body>
+  <!-- 내 Mac 수치 출처: data/state.db, data/logs/app.log (2026-11-09 실행, 57개) -->
+  <section class="card" data-card="1">
+    <div>
+      <p class="eyebrow">결정 1 · 받아 적기</p>
+      <h1>음성 인식 API 대신 내 Mac에서</h1>
+    </div>
+    <div class="table">
+      <div class="head corner"></div>
+      <div class="head">음성 인식 API</div>
+      <div class="head pick">내 Mac (Whisper)<span class="badge">이번 선택</span></div>
+
+      <div class="row-label">비용</div>
+      <div class="other">녹음 길이만큼 분 단위 과금</div>
+      <div class="pick"><strong>0원</strong>, 이미 있는 Mac으로</div>
+
+      <div class="row-label">속도</div>
+      <div class="other">업로드 시간 + 서버 처리 시간</div>
+      <div class="pick">녹음 62분을 <strong>23분</strong>에</div>
+
+      <div class="row-label">개인정보</div>
+      <div class="other">녹음 파일을 외부 서버로 보냄</div>
+      <div class="pick">오디오가 <strong>Mac 밖으로 안 나감</strong></div>
+    </div>
+    <p class="note">내 Mac 기준: M4 Pro, 메모리 24GB, Whisper large-v3</p>
+  </section>
+
+  <section class="card" data-card="2">
+    <div>
+      <p class="eyebrow">결정 2 · 정리하기</p>
+      <h1>API 키 대신 Claude 구독으로</h1>
+    </div>
+    <div class="table">
+      <div class="head corner"></div>
+      <div class="head">Claude API 키</div>
+      <div class="head pick">Claude 구독<span class="badge">이번 선택</span></div>
+
+      <div class="row-label">비용</div>
+      <div class="other">쓴 만큼 따로 청구</div>
+      <div class="pick">내던 구독료 안에서, <strong>추가 0원</strong></div>
+
+      <div class="row-label">한도</div>
+      <div class="other">결제 한도까지 계속 처리</div>
+      <div class="pick">한도에 걸리면 <strong>멈췄다가 이어서</strong></div>
+
+      <div class="row-label">준비</div>
+      <div class="other">키 발급·보관, 결제 수단 등록</div>
+      <div class="pick"><strong>로그인 한 번</strong>이면 끝</div>
+    </div>
+    <p class="note">Claude에는 받아 적은 글만 보냅니다. 파일 1개 정리에 평균 10.6초</p>
+  </section>
+
+<script>
+  // ?card=1|2, ?ratio=v → 세로(9:16)
+  const q = new URLSearchParams(location.search);
+  if (q.get("ratio") === "v") document.body.classList.add("v");
+  document.querySelector(`.card[data-card="${q.get("card") || "1"}"]`).classList.add("show");
+</script>
+</body>
+</html>

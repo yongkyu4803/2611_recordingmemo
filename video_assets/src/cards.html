@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>수치 카드</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --primary: #3ecf8e; --primary-deep: #24b47e;
+    --canvas: #ffffff; --hairline: #dfdfdf; --hairline-strong: #c7c7c7; --hairline-cool: #ededed;
+    --ink: #171717; --ink-mute: #707070;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { width: 100%; height: 100%; background: var(--canvas); }
+  body {
+    font-family: "Inter", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+    color: var(--ink); word-break: keep-all;
+    display: flex; flex-direction: column; justify-content: center; padding: 0 160px;
+  }
+  .card { display: none; flex-direction: column; gap: 28px; }
+  .card.show { display: flex; }
+  .label { font-size: 40px; color: var(--ink-mute); font-weight: 500; }
+  .big { font-size: 240px; font-weight: 500; letter-spacing: -0.04em; line-height: 1; display: flex; align-items: baseline; gap: 0; }
+  .big .unit { font-size: 96px; letter-spacing: -0.02em; margin-left: 12px; }
+  .big .arrow { font-size: 120px; color: var(--primary-deep); margin: 0 32px; }
+  .sub { font-size: 40px; line-height: 1.45; display: flex; align-items: center; gap: 18px; }
+  .sub .dot { width: 16px; height: 16px; border-radius: 9999px; background: var(--primary); flex: none; }
+  .sub.mute { color: var(--ink-mute); }
+
+  /* 단계별 처리 시간 막대 */
+  .bar { display: flex; height: 64px; border-radius: 6px; overflow: hidden; margin-top: 12px; }
+  .bar > div { height: 100%; border-right: 3px solid var(--canvas); }
+  .bar > div:last-child { border-right: 0; }
+  .legend { display: flex; gap: 40px; font-size: 32px; flex-wrap: wrap; }
+  .legend span { display: inline-flex; align-items: center; gap: 12px; }
+  .legend i { width: 22px; height: 22px; border-radius: 4px; display: inline-block; }
+  .legend b { font-weight: 500; }
+  .c-transcribe { background: var(--primary); }
+  .c-summarize { background: var(--ink); }
+  .c-other { background: var(--hairline-strong); }
+
+  /* 세로 9:16 */
+  body.v { padding: 0 80px; }
+  body.v .label { font-size: 48px; }
+  body.v .big { font-size: 260px; flex-wrap: wrap; row-gap: 0; }
+  body.v .big .unit { font-size: 110px; }
+  body.v .card[data-card="2"] .big { font-size: 200px; flex-direction: column; align-items: flex-start; gap: 8px; }
+  body.v .card[data-card="2"] .big .arrow { transform: rotate(90deg); font-size: 110px; margin: 0 0 0 30px; }
+  body.v .sub { font-size: 44px; align-items: flex-start; }
+  body.v .sub .dot { margin-top: 22px; }
+  body.v .legend { flex-direction: column; gap: 22px; font-size: 40px; }
+  body.v .bar { height: 80px; }
+</style>
+</head>
+<body>
+  <!-- 값 출처: data/state.db, data/logs/app.log (2026-11-09 실행) -->
+  <section class="card" data-card="1">
+    <p class="label">처리한 녹음</p>
+    <p class="big">57<span class="unit">개</span></p>
+    <p class="sub"><span class="dot"></span>실패 0건, 정리 버튼은 한 번도 안 눌렀습니다</p>
+  </section>
+
+  <section class="card" data-card="2">
+    <p class="label">녹음 길이 → Mac에서 받아 적은 시간</p>
+    <p class="big"><span>62<span class="unit">분</span></span><span class="arrow">→</span><span>23<span class="unit">분</span></span></p>
+    <p class="sub"><span class="dot"></span>녹음 길이의 약 3분의 1</p>
+  </section>
+
+  <section class="card" data-card="3">
+    <p class="label">추가 비용</p>
+    <p class="big">0<span class="unit">원</span></p>
+    <p class="sub"><span class="dot"></span>받아 적기는 내 Mac에서, 정리는 Claude 구독 한도 안에서</p>
+  </section>
+
+  <section class="card" data-card="4">
+    <p class="label">녹음 1개를 처리하는 시간 (57개 평균)</p>
+    <p class="big">39<span class="unit">초</span></p>
+    <div class="bar">
+      <div class="c-other" style="flex: 1.6"></div>
+      <div class="c-transcribe" style="flex: 24.7"></div>
+      <div class="c-summarize" style="flex: 10.6"></div>
+      <div class="c-other" style="flex: 2.0"></div>
+    </div>
+    <p class="legend">
+      <span><i class="c-transcribe"></i>받아 적기 <b>24.7초</b></span>
+      <span><i class="c-summarize"></i>Claude 정리 <b>10.6초</b></span>
+      <span><i class="c-other"></i>다운로드·업로드 <b>3.6초</b></span>
+    </p>
+  </section>
+
+<script>
+  // ?card=1..4, ?ratio=v → 세로(9:16)
+  const q = new URLSearchParams(location.search);
+  if (q.get("ratio") === "v") document.body.classList.add("v");
+  const n = q.get("card") || "1";
+  document.querySelector(`.card[data-card="${n}"]`).classList.add("show");
+</script>
+</body>
+</html>

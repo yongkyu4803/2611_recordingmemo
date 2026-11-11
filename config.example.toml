@@ -1,0 +1,32 @@
+# config.toml로 복사해서 쓰세요: cp config.example.toml config.toml
+# 비밀 값(키, 토큰)은 여기 말고 .env에 넣습니다.
+
+[drive]
+# 감시할 폴더 ID (Drive 폴더 주소 https://drive.google.com/drive/folders/<여기>)
+# .env의 DRIVE_FOLDER_ID가 있으면 그 값이 우선합니다.
+folder_id = ""
+done_folder_name = "처리완료"
+min_age_minutes = 2
+
+[whisper]
+# 속도가 부족하면 "mlx-community/whisper-large-v3-turbo"
+model = "mlx-community/whisper-large-v3-mlx"
+language = "ko"
+
+[claude]
+# 구독 로그인으로 호출. 사용량을 아끼려면 "sonnet"
+model = "opus"
+max_turns = 3
+
+[notion]
+# .env의 NOTION_PARENT_PAGE_ID가 있으면 그 값이 우선합니다.
+parent_page_id = ""
+version = "2025-09-03"
+
+[ops]
+max_attempts = 5
+keep_days = 30
+
+[glossary]
+# 자주 나오는 사람·기관·제품 이름. Whisper 표기와 Claude 정리에 참고로 쓰입니다.
+terms = []
