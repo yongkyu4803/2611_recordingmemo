@@ -1,7 +1,7 @@
 [project]
 name = "drive2notion"
 version = "0.1.0"
-description = "Google Drive m4a 녹음 → 로컬 Whisper 전사 → Claude(구독) 정리 → Notion 페이지"
+description = "Google Drive M4A·MP3 녹음 → 로컬 Whisper 전사 → Claude(구독) 정리 → Notion 페이지"
 requires-python = ">=3.12"
 dependencies = [
     "claude-agent-sdk>=0.2.157",

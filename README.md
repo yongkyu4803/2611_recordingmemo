@@ -1,6 +1,6 @@
 # drive2notion
 
-Google Drive 폴더에 올린 m4a 녹음을 Mac에서 전사(로컬 Whisper)하고, Claude(구독 로그인)로 정리해 Notion 페이지로 만듭니다.
+Google Drive 폴더에 올린 M4A·MP3 녹음을 Mac에서 전사(로컬 Whisper)하고, Claude(구독 로그인)로 정리해 Notion 페이지로 만듭니다.
 
 ```
 Drive 폴더 → 다운로드 → 무음 제거 → Whisper(로컬) → Claude 정리 → Notion 페이지 → 처리완료 폴더로 이동
@@ -22,7 +22,10 @@ Whisper 모델(`mlx-community/whisper-large-v3-mlx`, 약 3GB)은 첫 실행 때 
 
 ```bash
 uv run drive2notion -v run-file ~/녹음/회의.m4a --no-notion
+uv run drive2notion -v run-file ~/녹음/회의.mp3 --no-notion
 ```
+
+Drive 자동 감시와 로컬 파일 처리 모두 `.m4a`, `.mp3`를 지원합니다. 확장자의 대소문자는 구분하지 않으며, Drive에서는 확장자가 없어도 M4A·MP3 전용 MIME 유형이면 감지합니다.
 
 `data/notion_preview/`에 Notion에 올라갈 내용이 JSON으로 저장됩니다. `--no-notion`을 빼면 실제 Notion 페이지를 만듭니다(3번의 Notion 설정 필요).
 
@@ -48,7 +51,7 @@ cp .env.example .env && chmod 600 .env
    ```bash
    uv run drive2notion auth
    ```
-   "Google에서 확인하지 않은 앱" 화면이 나오면 **고급 → (앱 이름)(으)로 이동**을 누릅니다. 직접 만든 앱이라 나오는 경고입니다. 끝나면 로그인 계정과 감시 폴더의 m4a 개수가 출력됩니다.
+   "Google에서 확인하지 않은 앱" 화면이 나오면 **고급 → (앱 이름)(으)로 이동**을 누릅니다. 직접 만든 앱이라 나오는 경고입니다. 끝나면 로그인 계정과 감시 폴더의 M4A·MP3 개수가 출력됩니다.
 
 토큰은 `~/.config/drive2notion/google-token.json`(권한 600)에 저장됩니다. 로그인이 만료되거나 취소되면 macOS 알림이 뜨니, 그때 `auth`를 다시 실행하면 됩니다.
 

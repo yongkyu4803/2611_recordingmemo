@@ -2,12 +2,14 @@
 
 import json
 import subprocess
+import wave
 from pathlib import Path
 
 import pytest
 
 from drive2notion import pipeline as pl
 from drive2notion.config import Config
+from drive2notion.drive import DriveFile
 from drive2notion.errors import QuotaError
 from drive2notion.state import StateDB
 from drive2notion.summarize import Summary, SummaryResult
@@ -35,18 +37,23 @@ class FakeNotion:
         self.appended.extend(blocks)
 
 
-@pytest.fixture
-def env(tmp_path, monkeypatch):
+@pytest.fixture(params=[(".m4a", "aac"), (".mp3", "libmp3lame")], ids=["m4a", "mp3"])
+def env(tmp_path, monkeypatch, request):
     cfg = Config(root=tmp_path)
     cfg.ensure_dirs()
-    audio = tmp_path / "meeting.m4a"
+    suffix, codec = request.param
+    audio = tmp_path / f"meeting{suffix}"
     subprocess.run(
-        ["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "sine=frequency=440:duration=3", "-c:a", "aac", str(audio)],
+        ["ffmpeg", "-v", "error", "-f", "lavfi", "-i", "sine=frequency=440:duration=3", "-c:a", codec, str(audio)],
         check=True,
     )
     calls = {"transcribe": 0, "summarize": 0}
 
     def fake_transcribe(wav, out_json, **kw):
+        with wave.open(str(wav), "rb") as decoded:
+            assert decoded.getframerate() == 16000
+            assert decoded.getnchannels() == 1
+            assert decoded.getnframes() > 16000
         calls["transcribe"] += 1
         segs = [Segment(i * 2.0, i * 2.0 + 2, f"문장 {i}번입니다. " * 20) for i in range(2000)]  # 약 200문단
         t = Transcript(segs, 0, 0, 1.0)
@@ -61,7 +68,7 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setattr(pl, "summarize", fake_summarize)
     monkeypatch.setattr(pl, "notify", lambda *a: None)
     db = StateDB(cfg.db_path)
-    rec = db.add("local-1", "meeting.m4a", source="local", local_path=str(audio))
+    rec = db.add("local-1", audio.name, source="local", local_path=str(audio))
     yield cfg, db, rec, calls
     db.close()
 
@@ -126,9 +133,15 @@ def test_attempts_reach_permanent(env, monkeypatch):
 class FakeDrive:
     def __init__(self, src: Path):
         self.src = src
+        self.files = []
+        self.downloads = []
         self.moved = []
 
+    def list_new_audio(self, folder_id, min_age_minutes):
+        return self.files
+
     def download(self, file_id, dst, md5):
+        self.downloads.append(dst)
         dst.write_bytes(self.src.read_bytes())
         return dst
 
@@ -143,9 +156,19 @@ def test_drive_preview_does_not_move_file_and_resumes_later(env, tmp_path):
     cfg, db, local_rec, calls = env
     cfg.drive_folder_id = "folder"
     fake_drive = FakeDrive(Path(local_rec.local_path))
-    rec = db.add("drive-1", "음성.m4a", source="drive", created_time="2026-11-09T11:00:00Z")
+    suffix = fake_drive.src.suffix
+    fake_drive.files = [DriveFile(
+        id="drive-1", name=f"음성{suffix}",
+        mime_type="audio/mpeg" if suffix == ".mp3" else "audio/mp4",
+        size=fake_drive.src.stat().st_size, md5=None,
+        created_time="2026-11-09T11:00:00Z", web_link=None,
+    )]
+    preview_pipe = pl.Pipeline(cfg, db, drive=fake_drive, dry_run_notion=True)
+    assert preview_pipe.discover() == 1
+    assert preview_pipe.discover() == 0
+    rec = db.get("drive-1")
 
-    rec = pl.Pipeline(cfg, db, drive=fake_drive, dry_run_notion=True).run(rec)
+    rec = preview_pipe.run(rec)
     assert rec.stage == "summarized" and rec.flag is None
     assert fake_drive.moved == []  # 미리보기에서는 Drive 파일을 옮기지 않음
     assert (cfg.preview_dir / "drive-1.json").exists()
@@ -157,6 +180,8 @@ def test_drive_preview_does_not_move_file_and_resumes_later(env, tmp_path):
     assert fake_drive.moved == ["drive-1"]
     assert len(notion.pages) == 1
     assert calls == {"transcribe": 1, "summarize": 1}
+    assert [path.suffix for path in fake_drive.downloads] == [suffix]
+    assert list(cfg.tmp_dir.iterdir()) == []
 
 
 def test_corrupt_file_is_permanent(env, tmp_path):

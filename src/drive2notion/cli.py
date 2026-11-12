@@ -4,6 +4,7 @@
   drive2notion poll                     Drive 폴링 1회 (launchd가 3분마다 실행)
   drive2notion run-file 녹음.m4a          로컬 파일 1개 처리 (Drive 없이 시험할 때)
   drive2notion run-file 녹음.m4a --no-notion   Notion에 올리지 않고 미리보기 JSON만 저장
+  drive2notion run-file 녹음.mp3          로컬 MP3 파일 1개 처리
   drive2notion status                    파일별 상태 보기
   drive2notion reset <파일ID> [--from 단계]    실패한 파일을 다시 시도하게 만들기
 """
@@ -130,8 +131,8 @@ def cmd_auth(cfg: Config, args: argparse.Namespace) -> int:
             folder = drive._execute(
                 drive.service.files().get(fileId=cfg.drive_folder_id, fields="name", supportsAllDrives=True)
             )
-            files = drive.list_new_m4a(cfg.drive_folder_id, 0)
-            print(f"감시 폴더 확인: '{folder['name']}' (m4a {len(files)}개)")
+            files = drive.list_new_audio(cfg.drive_folder_id, 0)
+            print(f"감시 폴더 확인: '{folder['name']}' (M4A·MP3 {len(files)}개)")
         else:
             print("DRIVE_FOLDER_ID가 비어 있습니다. .env에 감시할 폴더 ID를 넣으세요.")
         return 0
@@ -223,7 +224,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--limit", type=int, default=0, help="이번 실행에서 처리할 최대 파일 수 (0=전부)")
     p.set_defaults(func=cmd_poll)
 
-    p = sub.add_parser("run-file", help="로컬 m4a 파일 1개 처리")
+    p = sub.add_parser("run-file", help="로컬 M4A·MP3 파일 1개 처리")
     p.add_argument("path")
     p.add_argument("--no-notion", action="store_true", help="Notion에 올리지 않고 미리보기만 저장")
     p.add_argument("--force", action="store_true", help="이미 처리한 파일도 처음부터 다시")

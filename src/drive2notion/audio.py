@@ -10,6 +10,15 @@ from pathlib import Path
 
 from .errors import NeedsReviewError, PermanentError, PipelineError
 
+_AUDIO_MIME_SUFFIXES = {
+    "audio/x-m4a": ".m4a",
+    "audio/m4a": ".m4a",
+    "audio/mpeg": ".mp3",
+    "audio/mp3": ".mp3",
+    "audio/x-mp3": ".mp3",
+}
+
+
 # 앞뒤 무음 제거: 앞쪽을 자르고, 뒤집어서 다시 앞쪽(=원래 끝)을 자른 뒤 되돌린다.
 # 말소리 앞에 0.5초 여유를 남긴다.
 _TRIM_FILTER = (
@@ -23,7 +32,15 @@ _TRIM_FILTER = (
 @dataclass
 class AudioInfo:
     duration_sec: float
-    recorded_at: str | None  # m4a 메타데이터의 creation_time (있을 때만)
+    recorded_at: str | None  # 오디오 메타데이터의 creation_time (있을 때만)
+
+
+def supported_audio_suffix(name: str, mime_type: str) -> str | None:
+    """M4A·MP3 확장자를 반환한다. 확장자로 판단할 수 없으면 MIME 유형으로 판단한다."""
+    suffix = Path(name).suffix.lower()
+    if suffix in {".m4a", ".mp3"}:
+        return suffix
+    return _AUDIO_MIME_SUFFIXES.get(mime_type.lower())
 
 
 def _tool(name: str) -> str:

@@ -8,7 +8,7 @@ import subprocess
 import time
 from pathlib import Path
 
-from .audio import probe, to_wav
+from .audio import probe, supported_audio_suffix, to_wav
 from .config import Config
 from .errors import AuthError, NeedsReviewError, PermanentError, PipelineError, QuotaError
 from .notion import (
@@ -70,7 +70,8 @@ class Pipeline:
 
     # ---------- 경로 ----------
     def _tmp_audio(self, rec: FileRecord) -> Path:
-        return self.cfg.tmp_dir / f"{rec.file_id}.m4a"
+        suffix = supported_audio_suffix(rec.name, rec.mime_type or "") or ".m4a"
+        return self.cfg.tmp_dir / f"{rec.file_id}{suffix}"
 
     def _source_audio(self, rec: FileRecord) -> Path:
         return Path(rec.local_path) if rec.source == "local" else self._tmp_audio(rec)
@@ -269,7 +270,7 @@ class Pipeline:
         if self.drive is None or not self.cfg.drive_folder_id:
             raise AuthError("Drive 설정이 없습니다 (.env의 DRIVE_FOLDER_ID 확인, `drive2notion auth`로 로그인).")
         added = 0
-        for f in self.drive.list_new_m4a(self.cfg.drive_folder_id, self.cfg.min_age_minutes):
+        for f in self.drive.list_new_audio(self.cfg.drive_folder_id, self.cfg.min_age_minutes):
             if self.db.get(f.id):
                 continue
             rec = self.db.add(

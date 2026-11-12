@@ -1,4 +1,4 @@
-"""Google Drive: 새 m4a 조회, 다운로드, 처리완료 폴더로 이동.
+"""Google Drive: 새 M4A·MP3 조회, 다운로드, 처리완료 폴더로 이동.
 
 인증은 본인 Google 계정 OAuth. `drive2notion auth`로 브라우저에서 한 번 로그인하면
 토큰 파일이 저장되고, 이후에는 그 토큰으로 무인 실행한다.
@@ -14,6 +14,7 @@ from pathlib import Path
 
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
+from .audio import supported_audio_suffix
 from .errors import AuthError, PipelineError
 
 log = logging.getLogger(__name__)
@@ -32,11 +33,6 @@ class DriveFile:
     md5: str | None
     created_time: str
     web_link: str | None
-
-
-def is_m4a(name: str, mime_type: str) -> bool:
-    """확장자가 .m4a이거나, 확장자가 없어도 mimeType이 m4a 전용 값이면 m4a로 본다."""
-    return name.lower().endswith(".m4a") or mime_type in {"audio/x-m4a", "audio/m4a"}
 
 
 def old_enough(created_time: str, min_age_minutes: int, now: datetime | None = None) -> bool:
@@ -178,7 +174,7 @@ class DriveClient:
                 ) from e
             raise PipelineError(f"Drive 오류({e.resp.status}): {e}") from e
 
-    def list_new_m4a(self, folder_id: str, min_age_minutes: int) -> list[DriveFile]:
+    def list_new_audio(self, folder_id: str, min_age_minutes: int) -> list[DriveFile]:
         files: list[DriveFile] = []
         token = None
         q = f"'{folder_id}' in parents and trashed = false and mimeType != '{FOLDER_MIME}'"
@@ -195,7 +191,7 @@ class DriveClient:
                 )
             )
             for f in res.get("files", []):
-                if not is_m4a(f["name"], f.get("mimeType", "")):
+                if not supported_audio_suffix(f["name"], f.get("mimeType", "")):
                     continue
                 if not old_enough(f["createdTime"], min_age_minutes):
                     log.info("업로드 직후라 다음 폴링으로 미룸: %s", f["name"])

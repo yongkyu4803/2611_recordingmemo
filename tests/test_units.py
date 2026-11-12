@@ -1,6 +1,9 @@
 from datetime import datetime, timezone
 
-from drive2notion.drive import is_m4a, old_enough
+import pytest
+
+from drive2notion.audio import supported_audio_suffix
+from drive2notion.drive import old_enough
 from drive2notion.notion import (
     BLOCKS_PER_REQUEST,
     TEXT_LIMIT,
@@ -69,11 +72,21 @@ def test_clean_removes_hallucination_and_long_repeats():
 
 # ---------- Drive 필터 ----------
 
-def test_is_m4a():
-    assert is_m4a("회의.M4A", "audio/mp4")
-    assert is_m4a("녹음", "audio/x-m4a")
-    assert not is_m4a("영상.mp4", "video/mp4")
-    assert not is_m4a("메모.txt", "text/plain")
+@pytest.mark.parametrize(("name", "mime_type", "expected"), [
+    ("회의.M4A", "audio/mp4", ".m4a"),
+    ("녹음", "audio/x-m4a", ".m4a"),
+    ("녹음", "audio/m4a", ".m4a"),
+    ("회의.mp3", "audio/mpeg", ".mp3"),
+    ("회의.MP3", "application/octet-stream", ".mp3"),
+    ("녹음", "audio/mpeg", ".mp3"),
+    ("녹음", "audio/mp3", ".mp3"),
+    ("녹음", "audio/x-mp3", ".mp3"),
+    ("영상.mp4", "video/mp4", None),
+    ("메모.txt", "text/plain", None),
+    ("녹음", "application/octet-stream", None),
+])
+def test_supported_audio_suffix(name, mime_type, expected):
+    assert supported_audio_suffix(name, mime_type) == expected
 
 
 def test_old_enough():
